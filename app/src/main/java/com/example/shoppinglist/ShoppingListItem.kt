@@ -33,9 +33,6 @@ fun ShoppingListItem(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Card() {
-
-        }
         Text(
             modifier = Modifier
                 .weight(1f)
