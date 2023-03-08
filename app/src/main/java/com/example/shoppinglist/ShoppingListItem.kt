@@ -13,23 +13,19 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ShoppingListItem(
-    modifier: Modifier = Modifier,
     itemName: String,
-    onItemClick: (() -> Unit)? = null,
     checkValue: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onItemClose: () -> Unit,
+    modifier: Modifier = Modifier,
+    onItemClick: () -> Unit = {},
+    onItemClickEnable: Boolean = false,
 ) {
     Row(
         modifier = modifier
-            /*
-            Dota al Row de la posibilidad de ser un elemento clickable con el único requisito
-            de pasarle una lambda en el parámetro onItemClick. Si no se le pasa ningun argumento,
-            dicha función queda deshabilitada y no permite recibir el evento onClick.
-            */
             .clickable(
-                enabled = onItemClick != null,
-                onClick = onItemClick ?: {}
+                enabled = onItemClickEnable,
+                onClick = onItemClick
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
