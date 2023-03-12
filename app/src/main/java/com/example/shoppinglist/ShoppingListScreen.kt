@@ -12,10 +12,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
+fun ShoppingListScreen() {
+    val viewModel: ShoppingListViewModel = viewModel()
     Scaffold(
         topBar = { TopAppBar(title = { Text(text = "Shopping List") }) },
         floatingActionButton = { if (viewModel.checkedFlag)
