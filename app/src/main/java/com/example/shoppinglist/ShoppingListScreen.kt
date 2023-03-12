@@ -18,7 +18,9 @@ import androidx.compose.ui.unit.dp
 fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
     Scaffold(
         topBar = { TopAppBar(title = { Text(text = "Shopping List") }) },
-        floatingActionButton = { if (viewModel.checkedFlag) {FloatingManyClose(viewModel)} } ,
+        floatingActionButton = { if (viewModel.checkedFlag)
+            FloatingManyClose { viewModel.closeManyItems() }
+        } ,
         floatingActionButtonPosition = FabPosition.Center
     ) { paddingValues ->
         LazyColumn(
@@ -26,20 +28,23 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
         ) {
             items(
                 items = viewModel.items,
-                key = { ShoppingDataItem -> ShoppingDataItem.id }
-            ) { ShoppingDataItem ->
+                key = { item -> item.id }
+            ) { item ->
                 ShoppingListItem(
                     modifier = Modifier
-                        .padding(horizontal = 10.dp, vertical = 10.dp)
+                        .padding(
+                            horizontal = 10.dp,
+                            vertical = 10.dp
+                        )
                         .background(
                             MaterialTheme.colors.secondary,
                             shape = RoundedCornerShape(15.dp)
                         )
                         .animateItemPlacement(),
-                    itemName = ShoppingDataItem.name,
-                    checkValue = ShoppingDataItem.checkValue,
-                    onCheckedChange = { viewModel.onChangeCheck(ShoppingDataItem) },
-                    onItemClose = { viewModel.close(ShoppingDataItem) },
+                    itemName = item.name,
+                    checkValue = item.checkValue,
+                    onCheckedChange = { viewModel.onChangeCheck(item) },
+                    onItemClose = { viewModel.close(item) },
                 )
             }
         }
@@ -47,9 +52,9 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel) {
 }
 
 @Composable
-fun FloatingManyClose(viewModel: ShoppingListViewModel){
+fun FloatingManyClose(onClick: () -> Unit){
     FloatingActionButton(
-        onClick = {viewModel.closeManyItems()},
+        onClick = onClick,
         backgroundColor = MaterialTheme.colors.primary
     ) {
         Icon(Icons.Filled.Close, contentDescription = "Close")
