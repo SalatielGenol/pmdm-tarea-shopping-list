@@ -1,13 +1,13 @@
 package com.example.shoppinglist
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 
 class ShoppingListViewModel : ViewModel() {
-    private val _items = getShoppingListItems().toMutableStateList()
+    private val _items = mutableStateListOf<ShoppingDataItem>()/*getShoppingListItems().toMutableStateList()*/
     val items: List<ShoppingDataItem>
         get() = _items.asReversed()
 
@@ -31,7 +31,7 @@ class ShoppingListViewModel : ViewModel() {
         checkedFlag = items.any { ShoppingDataItem -> ShoppingDataItem.checkValue }
     }
 
-    fun inputItemTextValueChante(text: String) {
+    fun inputItemTextValueSet(text: String) {
         inputItemText = text
     }
 
@@ -47,5 +47,6 @@ class ShoppingListViewModel : ViewModel() {
 }
 
 
+/*
 private fun getShoppingListItems() =
-    List(30) { i -> ShoppingDataItem(id = i, name = "Producto $i", checked = false) }
+    List(30) { i -> ShoppingDataItem(id = i, name = "Producto $i", checked = false) }*/
