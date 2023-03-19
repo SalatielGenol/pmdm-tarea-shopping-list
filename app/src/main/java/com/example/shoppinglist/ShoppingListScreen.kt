@@ -21,6 +21,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
@@ -31,35 +32,50 @@ fun ShoppingListScreen() {
     val viewModel: ShoppingListViewModel = viewModel()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    var inputItemText by remember { mutableStateOf("") }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(text = "Shopping List") }) },
+        topBar = {
+            TopAppBar(title = {
+                Text(
+                    text = stringResource(R.string.scaffold_name),
+                )
+            })
+        },
         floatingActionButton = {
-            if (viewModel.checkedFlag)
-                FloatingManyClose { viewModel.closeManyItems() }
+            if (viewModel.areItemsChecked())
+                FloatingButtonFewItemsClose { viewModel.closeManyItems() }
         },
         floatingActionButtonPosition = FabPosition.Center
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            AddButtonConvertible(
-                viewModel = viewModel,
-                kbOnDone = {
-                    if (viewModel.inputItemText.isNotBlank()) {
-                        viewModel.newItem(viewModel.inputItemText)
-                        viewModel.inputItemTextValueSet("")
-                        coroutineScope.launch { listState.scrollToItem(index = viewModel.items.last().id) }
+            AddItemFormButton(
+                inputItemText = inputItemText,
+                onValueChange = { inputItemText = it },
+                keyBoardOnDone = {
+                    if (inputItemText.isNotBlank()) {
+                        viewModel.newItem(inputItemText)
+                        inputItemText = ""
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(index = viewModel.items.size)
+                        }
                     }
                 }
             )
             LazyColumn(
                 state = listState,
-                contentPadding = paddingValues
-            ){
+                contentPadding = paddingValues,
+                reverseLayout = true
+            ) {
                 items(
                     items = viewModel.items,
-                    key = { item -> item.id }
+                    key = { ShoppingDataItem -> ShoppingDataItem.id }
                 ) { item ->
                     ShoppingListItem(
+                        itemName = item.name,
+                        checkValue = item.checkValue,
+                        onCheckedChange = { viewModel.onChangeCheck(item) },
+                        onItemClose = { viewModel.close(item) },
                         modifier = Modifier
                             .padding(
                                 horizontal = 10.dp,
@@ -70,10 +86,6 @@ fun ShoppingListScreen() {
                                 shape = RoundedCornerShape(15.dp)
                             )
                             .animateItemPlacement(),
-                        itemName = item.name,
-                        checkValue = item.checkValue,
-                        onCheckedChange = { viewModel.onChangeCheck(item) },
-                        onItemClose = { viewModel.close(item) },
                     )
                 }
             }
@@ -82,20 +94,25 @@ fun ShoppingListScreen() {
 }
 
 @Composable
-fun FloatingManyClose(onClick: () -> Unit) {
+fun FloatingButtonFewItemsClose(onClick: () -> Unit) {
     FloatingActionButton(
         onClick = onClick,
         backgroundColor = MaterialTheme.colors.primary
     ) {
-        Icon(Icons.Filled.Close, contentDescription = "Close")
+        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close))
     }
 }
 
 @Composable
-fun AddButtonConvertible(
-    viewModel: ShoppingListViewModel,
-    kbOnDone: (KeyboardActionScope) -> Unit,
+fun AddItemFormButton(
+    inputItemText: String,
+    onValueChange: (String) -> Unit,
+    keyBoardOnDone: (KeyboardActionScope) -> Unit,
 ) {
+    var hasFocus by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
     Box(
         modifier = Modifier
             .padding(
@@ -103,26 +120,22 @@ fun AddButtonConvertible(
                 vertical = 5.dp
             ), contentAlignment = Alignment.Center
     ) {
-        var hasFocus by remember { mutableStateOf(false) }
-        val focusRequester = remember { FocusRequester() }
-        val focusManager = LocalFocusManager.current
-
         BackHandler(hasFocus) {
             focusManager.clearFocus()
         }
 
         TextField(
-            value = viewModel.inputItemText,
-            onValueChange = { viewModel.inputItemTextValueSet(it) },
+            value = inputItemText,
+            onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
                 .focusRequester(focusRequester)
                 .onFocusChanged { focusState ->
                     hasFocus = focusState.hasFocus
                 },
-            placeholder = { Text(text = "Añadir producto") },
+            placeholder = { Text(text = stringResource(R.string.add_product)) },
             keyboardActions = KeyboardActions(
-                onDone =  kbOnDone
+                onDone = keyBoardOnDone
             ),
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(
@@ -140,7 +153,7 @@ fun AddButtonConvertible(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Añadir producto", modifier = Modifier.padding(5.dp))
+                Text(text = stringResource(R.string.add_product), modifier = Modifier.padding(5.dp))
             }
         }
 

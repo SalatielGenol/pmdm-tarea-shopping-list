@@ -1,21 +1,17 @@
 package com.example.shoppinglist
 
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 
 class ShoppingListViewModel : ViewModel() {
-    private val _items = mutableStateListOf<ShoppingDataItem>()/*getShoppingListItems().toMutableStateList()*/
+    private val _items = mutableStateListOf<ShoppingDataItem>()
     val items: List<ShoppingDataItem>
-        get() = _items.asReversed()
+        get() = _items
 
-    var checkedFlag by mutableStateOf(false)
-        private set
+    private var checkedFlag = mutableStateOf(false)
 
-    var inputItemText: String by mutableStateOf("")
-        private set
+    private var itemID = 0
 
     fun close(item: ShoppingDataItem) {
         _items.remove(element = item)
@@ -23,30 +19,25 @@ class ShoppingListViewModel : ViewModel() {
 
     fun onChangeCheck(item: ShoppingDataItem) {
         item.checkValue = !item.checkValue
-        checkedFlag = items.any { ShoppingDataItem -> ShoppingDataItem.checkValue }
+        checkedFlag.value = items.any { ShoppingDataItem -> ShoppingDataItem.checkValue }
     }
 
     fun closeManyItems() {
         _items.removeIf { ShoppingDataItem -> ShoppingDataItem.checkValue }
-        checkedFlag = items.any { ShoppingDataItem -> ShoppingDataItem.checkValue }
-    }
-
-    fun inputItemTextValueSet(text: String) {
-        inputItemText = text
+        checkedFlag.value = items.any { ShoppingDataItem -> ShoppingDataItem.checkValue }
     }
 
     fun newItem(itemName: String) {
         _items.add(
             element = ShoppingDataItem(
-                id = _items.size + 1,
+                id = ++itemID,
                 name = itemName,
                 checked = false
             )
         )
     }
+
+    fun areItemsChecked(): Boolean {
+        return checkedFlag.value
+    }
 }
-
-
-/*
-private fun getShoppingListItems() =
-    List(30) { i -> ShoppingDataItem(id = i, name = "Producto $i", checked = false) }*/
