@@ -18,12 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -32,7 +33,9 @@ fun ShoppingListScreen() {
     val viewModel: ShoppingListViewModel = viewModel()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    var inputItemText by remember { mutableStateOf("") }
+
+    val addItemFocusRequest = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
         topBar = {
@@ -49,19 +52,47 @@ fun ShoppingListScreen() {
         floatingActionButtonPosition = FabPosition.Center
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            AddItemFormButton(
-                inputItemText = inputItemText,
-                onValueChange = { inputItemText = it },
-                keyBoardOnDone = {
-                    if (inputItemText.isNotBlank()) {
-                        viewModel.newItem(inputItemText)
-                        inputItemText = ""
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(index = viewModel.items.size)
-                        }
+            Box(
+                modifier = Modifier
+                    .padding(
+                        horizontal = 12.dp,
+                        vertical = 7.dp
+                    ), contentAlignment = Alignment.Center
+            ){
+                if(!viewModel.isVisible){
+                    AddItemButton(
+                        text = stringResource(R.string.add_product),
+                        onClick = {
+                            viewModel.isVisible = it
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }else{
+                    LaunchedEffect(Unit){
+                        delay(500)
+                        addItemFocusRequest.requestFocus()
                     }
+                    BackHandler() {
+                        focusManager.clearFocus()
+                        viewModel.isVisible = false
+                        viewModel.inputItemText = TextFieldValue("")
+                    }
+                    AddItemTextField(
+                        inputItemText = viewModel.inputItemText,
+                        onValueChange = { viewModel.inputItemText = it },
+                        keyBoardOnDone = {
+                            if (viewModel.inputItemText.text.isNotBlank()) {
+                                viewModel.newItem(viewModel.inputItemText.text)
+                                viewModel.inputItemText = TextFieldValue("")
+                                coroutineScope.launch {
+                                    listState.animateScrollToItem(index = viewModel.items.size)
+                                }
+                            }
+                        },
+                        focusRequester = addItemFocusRequest
+                    )
                 }
-            )
+            }
             LazyColumn(
                 state = listState,
                 contentPadding = paddingValues,
@@ -104,58 +135,43 @@ fun FloatingButtonFewItemsClose(onClick: () -> Unit) {
 }
 
 @Composable
-fun AddItemFormButton(
-    inputItemText: String,
-    onValueChange: (String) -> Unit,
+fun AddItemTextField(
+    inputItemText: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     keyBoardOnDone: (KeyboardActionScope) -> Unit,
+    focusRequester: FocusRequester
 ) {
-    var hasFocus by remember { mutableStateOf(false) }
-    val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
-
-    Box(
+    TextField(
+        value = inputItemText,
+        onValueChange = onValueChange,
         modifier = Modifier
-            .padding(
-                horizontal = 12.dp,
-                vertical = 5.dp
-            ), contentAlignment = Alignment.Center
-    ) {
-        BackHandler(hasFocus) {
-            focusManager.clearFocus()
-        }
-
-        TextField(
-            value = inputItemText,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(focusRequester)
-                .onFocusChanged { focusState ->
-                    hasFocus = focusState.hasFocus
-                },
-            placeholder = { Text(text = stringResource(R.string.add_product)) },
-            keyboardActions = KeyboardActions(
-                onDone = keyBoardOnDone
-            ),
-            singleLine = true,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            )
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
+        placeholder = { Text(text = stringResource(R.string.add_product)) },
+        keyboardActions = KeyboardActions(
+            onDone = keyBoardOnDone
+        ),
+        singleLine = true,
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
         )
+    )
+}
 
-        if (!hasFocus) {
-            Button(
-                onClick = {
-                    hasFocus = !hasFocus
-                    focusRequester.requestFocus()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = stringResource(R.string.add_product), modifier = Modifier.padding(5.dp))
-            }
-        }
-
+@Composable
+fun AddItemButton(
+    text: String,
+    onClick: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = {
+            onClick(true)
+        },
+        modifier = modifier
+    ) {
+        Text(text = text, modifier = Modifier.padding(5.dp))
     }
 }

@@ -1,7 +1,10 @@
 package com.example.shoppinglist
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 
 class ShoppingListViewModel : ViewModel() {
@@ -12,6 +15,9 @@ class ShoppingListViewModel : ViewModel() {
     private var checkedFlag = mutableStateOf(false)
 
     private var itemID = 0
+
+    var inputItemText by mutableStateOf(TextFieldValue(""))
+    var isVisible by mutableStateOf(false)
 
     fun close(item: ShoppingDataItem) {
         _items.remove(element = item)
