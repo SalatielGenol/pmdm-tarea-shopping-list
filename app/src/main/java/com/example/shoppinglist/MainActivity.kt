@@ -26,3 +26,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+// https://stackoverflow.com/questions/74369518/how-to-move-cursor-to-the-end-of-the-textfield-after-screen-rotation-or-system-t
+// https://www.composables.com/tutorials/focus-text
+// https://medium.com/google-developer-experts/focus-in-jetpack-compose-6584252257fe

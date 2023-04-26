@@ -12,38 +12,33 @@ class ShoppingListViewModel : ViewModel() {
     val items: List<ShoppingDataItem>
         get() = _items
 
-    private var checkedFlag = mutableStateOf(false)
-
     private var itemID = 0
 
-    var inputItemText by mutableStateOf(TextFieldValue(""))
-    var isVisible by mutableStateOf(false)
+    private var isAddButtonVisible by mutableStateOf(true)
+
+    fun getAddButtonState(): Boolean{
+        return isAddButtonVisible
+    }
 
     fun close(item: ShoppingDataItem) {
         _items.remove(element = item)
     }
 
-    fun onChangeCheck(item: ShoppingDataItem) {
-        item.checkValue = !item.checkValue
-        checkedFlag.value = items.any { ShoppingDataItem -> ShoppingDataItem.checkValue }
-    }
-
-    fun closeManyItems() {
-        _items.removeIf { ShoppingDataItem -> ShoppingDataItem.checkValue }
-        checkedFlag.value = items.any { ShoppingDataItem -> ShoppingDataItem.checkValue }
-    }
-
-    fun newItem(itemName: String) {
+    fun newItem(itemName: TextFieldValue) {
         _items.add(
             element = ShoppingDataItem(
                 id = ++itemID,
-                name = itemName,
+                name = itemName.text,
                 checked = false
             )
         )
     }
 
-    fun areItemsChecked(): Boolean {
-        return checkedFlag.value
+    fun showAddButton(){
+        isAddButtonVisible = true
+    }
+
+    fun hideAddButton(){
+        isAddButtonVisible = false
     }
 }
