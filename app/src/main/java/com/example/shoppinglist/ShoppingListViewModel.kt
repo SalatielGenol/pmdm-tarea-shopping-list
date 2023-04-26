@@ -12,6 +12,10 @@ class ShoppingListViewModel : ViewModel() {
     val items: List<ShoppingDataItem>
         get() = _items
 
+    /*private val context =
+
+    val dbHelper = SqlVanilla(context,"data.db", 1)*/
+
     private var itemID = 0
 
     private var isAddButtonVisible by mutableStateOf(true)
