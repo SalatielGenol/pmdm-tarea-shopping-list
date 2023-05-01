@@ -6,11 +6,11 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class SqlVanilla(context: Context, dbName: String, dbVersion: Int) :
+class SqlVanilla(context: Context?, dbName: String, dbVersion: Int) :
     SQLiteOpenHelper(context, dbName, null, dbVersion) {
     override fun onCreate(db: SQLiteDatabase?) {
         db!!.execSQL(
-            "CREATE TABLE shoppingdata(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, cheked BOOLEAN)"
+            "CREATE TABLE shoppingdata(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, checked BOOLEAN)"
         )
     }
 
@@ -26,17 +26,22 @@ class SqlVanilla(context: Context, dbName: String, dbVersion: Int) :
             put("name", name)
             put("checked", checked)
         }
+
+        val db = this.writableDatabase
+
+        db.insert("shoppingdata", null, value)
+        db.close()
     }
 
     fun getData(): Cursor {
         val db = this.readableDatabase
-        return db.rawQuery("SELECT * FROM textos", null)
+        return db.rawQuery("SELECT * FROM shoppingdata", null)
     }
 
-    fun getLastId(): Cursor {
+/*    fun getLastId(): Cursor {
         val db = this.readableDatabase
-        return db.rawQuery("SELECT * FROM textos", null)
-    }
+        return db.rawQuery("SELECT * FROM shoppingdata", null)
+    }*/
 
     fun removeItem(id: Int){
         val args = arrayOf(id.toString())
@@ -46,7 +51,7 @@ class SqlVanilla(context: Context, dbName: String, dbVersion: Int) :
         db.close()
     }
 
-    fun modifyItem(id: Int, checked: Boolean){
+/*    fun modifyItem(id: Int, checked: Boolean){
         val args = arrayOf(id.toString())
 
         val values = ContentValues().apply {
@@ -56,5 +61,5 @@ class SqlVanilla(context: Context, dbName: String, dbVersion: Int) :
         val db = this.writableDatabase
         db.update("shoppingdata", values, "id = ?", args)
         db.close()
-    }
+    }*/
 }
